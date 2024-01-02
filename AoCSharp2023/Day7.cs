@@ -6,7 +6,7 @@
         {
             string[] lines = File.ReadAllLines("./inputs/7.txt");
             Console.WriteLine(Part1(lines));
-            //Console.WriteLine(Part2(lines));
+            Console.WriteLine(Part2(lines));
         }
 
         long Part1(string[] lines)
@@ -15,7 +15,20 @@
 
             var orderedHandsAndBids = handsAndBids.OrderByDescending(l => l.Hand).ToList();
             long total = 0;
-            for(int i = 0; i < orderedHandsAndBids.Count; i++)
+            for (int i = 0; i < orderedHandsAndBids.Count; i++)
+            {
+                total += orderedHandsAndBids[i].Bid * (i + 1);
+            }
+            return total;
+        }
+
+        long Part2(string[] lines)
+        {
+            var handsAndBids = lines.Select(l => ParseLine2(l)).ToList();
+
+            var orderedHandsAndBids = handsAndBids.OrderByDescending(l => l.Hand).ToList();
+            long total = 0;
+            for (int i = 0; i < orderedHandsAndBids.Count; i++)
             {
                 total += orderedHandsAndBids[i].Bid * (i + 1);
             }
@@ -29,23 +42,53 @@
             var bid = int.Parse(split[1]);
             return (hand, bid);
         }
+
+        (Hand Hand, int Bid) ParseLine2(string line)
+        {
+            var split = line.Split(' ');
+            var hand = new Hand(split[0], true);
+            var bid = int.Parse(split[1]);
+            return (hand, bid);
+        }
+    }
+
+    internal enum HandType
+    {
+        FiveOfAKind,
+        FourOfAKind,
+        FullHouse,
+        ThreeOfAKind,
+        TwoPair,
+        OnePair,
+        HighCard,
     }
 
     internal class Hand : IComparable<Hand>
     {
-        public Hand(string hand)
+        public Hand(string hand, bool jokerRuleEnabled = false)
         {
             if (hand.Length != 5) throw new ArgumentOutOfRangeException("Only accept hands of 5 cards");
 
-            Cards = hand.Select(c => CharToCard(c)).ToArray();
+            Cards = hand.Select(c => CharToCard(c, jokerRuleEnabled)).ToArray();
         }
-        Card[] Cards; 
-        /// A, K, Q, J, T, 9, 8, 7, 6, 5, 4, 3, or 2
+        Card[] Cards;
         HandType Type
         {
             get
             {
-                var buckets = Cards.GroupBy(c => c);
+                IEnumerable<Card> cards;
+                if(!Cards.All(c => c == Card.Joker))
+                {
+                    var bucketsWithoutJokers = Cards.Where(c => c != Card.Joker).GroupBy(c => c);
+                    bucketsWithoutJokers = bucketsWithoutJokers.OrderByDescending(b => b.Count());
+                    cards = Cards.Where(c => c != Card.Joker).Concat(Cards.Where(c => c == Card.Joker).Select(c => bucketsWithoutJokers.First()?.Key ?? Card.Joker));
+                } else
+                {
+                    cards = Cards.ToList();
+                }
+
+
+                var buckets = cards.GroupBy(c => c);
                 if (buckets.Count() == 1) return HandType.FiveOfAKind;
                 if (buckets.Count() == 5) return HandType.HighCard;
                 if (buckets.Count() == 4) return HandType.OnePair;
@@ -57,28 +100,9 @@
                 {
                     return buckets.Any(b => b.Count() == 3) ? HandType.FullHouse : HandType.FourOfAKind;
                 }
+
                 throw new Exception("Should not reach this for a 5-card hand unless I'm making a mistake..");
             }
-        }
-        /// Five of a kind, where all five cards have the same label: AAAAA
-        /// Four of a kind, where four cards have the same label and one card has a different label: AA8AA
-        /// Full house, where three cards have the same label, and the remaining two cards share a different label: 23332
-        /// Three of a kind, where three cards have the same label, and the remaining two cards are each different from any other card in the hand: TTT98
-        /// Two pair, where two cards share one label, two other cards share a second label, and the remaining card has a third label: 23432
-        /// One pair, where two cards share one label, and the other three cards have a different label from the pair and each other: A23A4
-        /// High card, where all cards' labels are distinct: 23456
-        /// 
-
-
-        internal enum HandType
-        {
-            FiveOfAKind,
-            FourOfAKind,
-            FullHouse,
-            ThreeOfAKind,
-            TwoPair,
-            OnePair,
-            HighCard,
         }
 
         internal enum Card
@@ -96,6 +120,7 @@
             Four,
             Three,
             Two,
+            Joker,
         }
 
         public int CompareTo(Hand other)
@@ -103,24 +128,24 @@
             var typeComparison = Type.CompareTo(other.Type);
             if (typeComparison == 0)
             {
-                for(int i = 0; i < 5; i++)
+                for (int i = 0; i < 5; i++)
                 {
                     var cardComparison = Cards[i].CompareTo(other.Cards[i]);
-                    if(cardComparison != 0) return cardComparison;
+                    if (cardComparison != 0) return cardComparison;
                 }
                 return 0;
             }
             else return typeComparison;
         }
 
-        internal Card CharToCard(char c)
+        internal Card CharToCard(char c, bool jokerRuleEnabled = false)
         {
             return c switch
             {
                 'A' => Card.Ace,
                 'K' => Card.King,
                 'Q' => Card.Queen,
-                'J' => Card.Jack,
+                'J' => jokerRuleEnabled ? Card.Joker : Card.Jack,
                 'T' => Card.Ten,
                 '9' => Card.Nine,
                 '8' => Card.Eight,
