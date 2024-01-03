@@ -1,11 +1,14 @@
-﻿namespace AoCSharp2023
+﻿using Shared;
+using System.Numerics;
+
+namespace AoCSharp2023
 {
     internal class Day8
     {
         public Day8()
         {
             string[] lines = File.ReadAllLines("./inputs/8.txt");
-            //Console.WriteLine(Part1(lines));
+            Console.WriteLine(Part1(lines));
             Console.WriteLine(Part2(lines));
         }
 
@@ -23,22 +26,36 @@
             return steps;
         }
 
-        public long Part2(string[] lines)
+        public BigInteger Part2(string[] lines)
         {
-            // TODO: too slow without some form of cycle-detection
-            // Bit too ill at the moment to work something out
-            // Idea is for each node keep track of when they hit an end-node & what instruction-index they're on, if both ever match we've found a cycle, once we've found the cycles for all nodes we can calculate how long before their cycles align.
+            // Some classic AoC hidden properties:
+            // Each will reach exactly 1 endstate
+            // They will all only reach it on the first step of the cycle
             var (lrInstructions, nodes) = Parse(lines);
             var currentNodes = nodes.Values.Where(n => n.Name.Last() == 'A').ToList();
+            var endStateTracker = currentNodes.Select(_ => new List<(int atStep, int atInstruction, string atEndNode)>()).ToList();
             int steps = 0;
-            while (currentNodes.Any(n => n.Name.Last() != 'Z'))
+
+            // Can keep it simple thanks to hidden properties..
+            while (endStateTracker.Any(list => !list.Any()))
             {
-                var instruction = lrInstructions[steps % lrInstructions.Length];
+                var instructionIndex = steps % lrInstructions.Length;
+                var instruction = lrInstructions[instructionIndex];
                 var newCurrentNodes = currentNodes.Select(n => instruction == 'L' ? n.Left : n.Right);
                 steps++;
                 currentNodes = newCurrentNodes.ToList();
+                for (int i = 0; i < currentNodes.Count; i++)
+                {
+                    var node = currentNodes[i];
+                    if (node.Name.Last() == 'Z')
+                    {
+                        endStateTracker[i].Add((steps, steps % lrInstructions.Length, node.Name));
+                    }
+                }
             }
-            return steps;
+
+            var timeForCyclesToAlign = AoCMath.LCM(endStateTracker.Select(l => (BigInteger) l[0].atStep));
+            return timeForCyclesToAlign;
         }
 
         (string instructions, Dictionary<string, Node> nodes) Parse(string[] lines)
