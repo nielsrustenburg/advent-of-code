@@ -10,4 +10,5 @@ Console.WriteLine("Hello, World!");
 //var d6 = new Day6();
 //var d7 = new Day7();
 //var d8 = new Day8();
-var d9 = new Day9();
+//var d9 = new Day9();
+var d10 = new Day10();
