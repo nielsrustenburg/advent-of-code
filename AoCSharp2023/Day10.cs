@@ -1,18 +1,18 @@
-﻿namespace AoCSharp2023
+﻿using System;
+using System.ComponentModel;
+using System.Text;
+
+namespace AoCSharp2023
 {
     internal class Day10
     {
         public Day10()
         {
             string[] lines = File.ReadAllLines("./inputs/10.txt");
-            Console.WriteLine(Part1(lines));
-            //Console.WriteLine(Part2(lines));
-        }
-
-        int Part1(string[] lines)
-        {
             var grid = CreateGrid(lines);
-            return (FindLoopLength(grid) + 1) / 2;
+            var results = Solve(grid);
+            Console.WriteLine((results.LoopLength + 1) / 2);
+            Console.WriteLine(new int[] { results.SideOne, results.SideTwo }.Min()); // Assuming inside is smaller than outside
         }
 
         char[,] CreateGrid(string[] lines)
@@ -64,7 +64,89 @@
             return neighbours;
         }
 
-        int FindLoopLength(char[,] grid)
+        void DrawGrid(char[,] grid)
+        {
+            char[] markedSymbols = { 'S', '1', '2' };
+            for (int y = 0; y < grid.GetLength(1); y++)
+            {
+                var s = new StringBuilder();
+                for (int x = 0; x < grid.GetLength(0); x++)
+                {
+                    if (markedSymbols.Contains(grid[x, y]))
+                    {
+                        s.Append(grid[x, y]);
+                    }
+                    else
+                    {
+                        s.Append('.');
+                    }
+                }
+                Console.WriteLine(s.ToString());
+            }
+        }
+
+        void MarkOnGrid(char[,] grid, int x, int y, char mark)
+        {
+            char[] pipeSymbols = { 'S' };
+            if (x >= 0 && x < grid.GetLength(0) && y >= 0 && y < grid.GetLength(1) && !pipeSymbols.Contains(grid[x,y]))
+            {
+                grid[x, y] = mark;
+            }
+        }
+
+        (int Side1, int Side2) FloodInOutSides(char[,] grid)
+        {
+            var queue = new List<(int x, int y)>();
+            for(int x = 0; x < grid.GetLength(0); x++)
+            {
+                for(int y = 0; y < grid.GetLength(1); y++)
+                {
+                    if (grid[x, y] == '1' || grid[x, y] == '2')
+                    {
+                        queue.Add((x, y));
+                    }
+                }
+            }
+
+            char[] markedSymbols = { 'S', '1', '2' };
+            while (queue.Any())
+            {
+                var newQueue = new List<(int x, int y)>();
+                foreach(var(x, y) in queue)
+                {
+                    var nb = FindNeighbours(grid, x, y);
+                    foreach(var(nx,ny) in nb)
+                    {
+                        if (!markedSymbols.Contains(grid[nx, ny]))
+                        {
+                            grid[nx, ny] = grid[x, y];
+                            newQueue.Add((nx,ny));
+                        }
+                    }
+                }
+                queue = newQueue;
+            }
+
+            var sideOne = 0;
+            var sideTwo = 0;
+            foreach(var c in grid)
+            {
+                if(c == '1')
+                {
+                    sideOne++;
+                }
+
+                if(c == '2')
+                {
+                    sideTwo++;
+                }
+            }
+
+            //DrawGrid(grid);
+            return (sideOne, sideTwo);
+        }
+
+        (int LoopLength,int SideOne,int SideTwo) Solve(char[,] grid)
         {
             var (x, y) = FindAnimalCoordinates(grid);
             // Find a connected neighbour
@@ -78,6 +160,8 @@
             bool up = neighbours.Contains((x, y - 1)) && upConnectors.Contains(grid[x, y - 1]);
             bool down = neighbours.Contains((x, y + 1)) && downConnectors.Contains(grid[x, y + 1]);
 
+            var inOutGrid = new char[grid.GetLength(0), grid.GetLength(1)];
+            inOutGrid[x, y] = 'S';
             Direction directionOfPrevious = Direction.Right; // Just to avoid some unassigned complaints..
             if (left)
             {
@@ -104,14 +188,19 @@
             int steps = 1;
             while (grid[x, y] != 'S')
             {
+                inOutGrid[x, y] = 'S';
                 if (grid[x, y] == '-')
                 {
                     if (directionOfPrevious == Direction.Right)
                     {
+                        MarkOnGrid(inOutGrid, x, y - 1, '2');
+                        MarkOnGrid(inOutGrid, x, y + 1, '1');
                         x--;
                     }
                     else if (directionOfPrevious == Direction.Left)
                     {
+                        MarkOnGrid(inOutGrid, x, y - 1, '1');
+                        MarkOnGrid(inOutGrid, x, y + 1, '2');
                         x++;
                     }
                     else throw new Exception("Unexpected direction");
@@ -120,10 +209,14 @@
                 {
                     if (directionOfPrevious == Direction.Up)
                     {
+                        MarkOnGrid(inOutGrid, x - 1, y, '2');
+                        MarkOnGrid(inOutGrid, x + 1, y, '1');
                         y++;
                     }
                     else if (directionOfPrevious == Direction.Down)
                     {
+                        MarkOnGrid(inOutGrid, x - 1, y, '1');
+                        MarkOnGrid(inOutGrid, x + 1, y, '2');
                         y--;
                     }
                     else throw new Exception("Unexpected direction");
@@ -132,11 +225,15 @@
                 {
                     if (directionOfPrevious == Direction.Right)
                     {
+                        MarkOnGrid(inOutGrid, x, y - 1, '2');
+                        MarkOnGrid(inOutGrid, x - 1, y, '2');
                         y++;
                         directionOfPrevious = Direction.Up;
                     }
                     else if (directionOfPrevious == Direction.Down)
                     {
+                        MarkOnGrid(inOutGrid, x, y - 1, '1');
+                        MarkOnGrid(inOutGrid, x - 1, y, '1');
                         x++;
                         directionOfPrevious = Direction.Left;
                     }
@@ -146,11 +243,15 @@
                 {
                     if (directionOfPrevious == Direction.Left)
                     {
+                        MarkOnGrid(inOutGrid, x, y - 1, '1');
+                        MarkOnGrid(inOutGrid, x + 1, y, '1');
                         y++;
                         directionOfPrevious = Direction.Up;
                     }
                     else if (directionOfPrevious == Direction.Down)
                     {
+                        MarkOnGrid(inOutGrid, x, y - 1, '2');
+                        MarkOnGrid(inOutGrid, x + 1, y, '2');
                         x--;
                         directionOfPrevious = Direction.Right;
                     }
@@ -160,11 +261,15 @@
                 {
                     if (directionOfPrevious == Direction.Left)
                     {
+                        MarkOnGrid(inOutGrid, x, y + 1, '2');
+                        MarkOnGrid(inOutGrid, x + 1, y, '2');
                         y--;
                         directionOfPrevious = Direction.Down;
                     }
                     else if (directionOfPrevious == Direction.Up)
                     {
+                        MarkOnGrid(inOutGrid, x, y + 1, '1');
+                        MarkOnGrid(inOutGrid, x + 1, y, '1');
                         x--;
                         directionOfPrevious = Direction.Right;
                     }
@@ -174,11 +279,15 @@
                 {
                     if (directionOfPrevious == Direction.Right)
                     {
+                        MarkOnGrid(inOutGrid, x, y + 1, '1');
+                        MarkOnGrid(inOutGrid, x - 1, y, '1');
                         y--;
                         directionOfPrevious = Direction.Down;
                     }
                     else if (directionOfPrevious == Direction.Up)
                     {
+                        MarkOnGrid(inOutGrid, x, y + 1, '2');
+                        MarkOnGrid(inOutGrid, x - 1, y, '2');
                         x++;
                         directionOfPrevious = Direction.Left;
                     }
@@ -187,7 +296,10 @@
 
                 steps++;
             }
-            return steps;
+
+            var (sideOne, sideTwo) = FloodInOutSides(inOutGrid);
+
+            return (steps, sideOne, sideTwo);
         }
     }
 }
