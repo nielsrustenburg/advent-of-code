@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Text;
+using Shared;
 
 namespace AoCSharp2023
 {
@@ -9,24 +10,12 @@ namespace AoCSharp2023
         public Day10()
         {
             string[] lines = File.ReadAllLines("./inputs/10.txt");
-            var grid = CreateGrid(lines);
+            var grid = GridHelper.CreateGrid(lines);
             var results = Solve(grid);
             Console.WriteLine((results.LoopLength + 1) / 2);
             Console.WriteLine(new int[] { results.SideOne, results.SideTwo }.Min()); // Assuming inside is smaller than outside
         }
 
-        char[,] CreateGrid(string[] lines)
-        {
-            var grid = new char[lines[0].Length, lines.Count()];
-            for (int y = 0; y < lines.Count(); y++)
-            {
-                for (int x = 0; x < lines[y].Length; x++)
-                {
-                    grid[x, y] = lines[y][x];
-                }
-            }
-            return grid;
-        }
 
         (int X, int Y) FindAnimalCoordinates(char[,] grid)
         {
