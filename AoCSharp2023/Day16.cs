@@ -1,11 +1,4 @@
 ﻿using Shared;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AoCSharp2023
 {
@@ -109,13 +102,5 @@ namespace AoCSharp2023
                 (_, _) => throw new Exception("shouldn't be here")
             };
         }
-    }
-
-    enum Direction
-    {
-        Up,
-        Right,
-        Down,
-        Left
     }
 }

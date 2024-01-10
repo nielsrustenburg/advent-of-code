@@ -17,6 +17,19 @@ namespace Shared
             return grid;
         }
 
+        public static int[,] CreateNumericalGrid(string[] lines)
+        {
+            var grid = new int[lines[0].Length, lines.Count()];
+            for (int y = 0; y < lines.Count(); y++)
+            {
+                for (int x = 0; x < lines[y].Length; x++)
+                {
+                    grid[x, y] = int.Parse(lines[y].Substring(x,1));
+                }
+            }
+            return grid;
+        }
+
         public static void DrawGrid(char[,] grid)
         {
             for (int y = 0; y < grid.GetLength(1); y++)
@@ -30,7 +43,7 @@ namespace Shared
             }
         }
 
-        public static bool IsWithinGrid(char[,] grid, int x, int y) {
+        public static bool IsWithinGrid<T>(T[,] grid, int x, int y) {
             return x >= 0 && x < grid.GetLength(0) && y >= 0 && y < grid.GetLength(1);
         }
     }
