@@ -29,5 +29,9 @@ namespace Shared
                 Console.WriteLine(s.ToString());
             }
         }
+
+        public static bool IsWithinGrid(char[,] grid, int x, int y) {
+            return x >= 0 && x < grid.GetLength(0) && y >= 0 && y < grid.GetLength(1);
+        }
     }
 }
