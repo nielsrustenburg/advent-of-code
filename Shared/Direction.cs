@@ -1,4 +1,6 @@
-﻿namespace Shared
+﻿using System.Numerics;
+
+namespace Shared
 {
     public enum Direction
     {
@@ -10,14 +12,26 @@
 
     public static class DirectionExtensions
     {
-        public static (int X, int Y) StepInDirection(this Direction direction, int x, int y)
+        public static (int X, int Y) StepInDirection(this Direction direction, int x, int y, int stepSize = 1)
         {
             return (direction) switch
             {
-                Direction.Up => (x, y - 1),
-                Direction.Right => (x + 1, y),
-                Direction.Down => (x, y + 1),
-                Direction.Left => (x - 1, y),
+                Direction.Up => (x, y - stepSize),
+                Direction.Right => (x + stepSize, y),
+                Direction.Down => (x, y + stepSize),
+                Direction.Left => (x - stepSize, y),
+                _ => throw new NotImplementedException("Should never occur"),
+            };
+        }
+
+        public static (BigInteger X, BigInteger Y) StepInDirection(this Direction direction, BigInteger x, BigInteger y, BigInteger stepSize)
+        {
+            return (direction) switch
+            {
+                Direction.Up => (x, y - stepSize),
+                Direction.Right => (x + stepSize, y),
+                Direction.Down => (x, y + stepSize),
+                Direction.Left => (x - stepSize, y),
                 _ => throw new NotImplementedException("Should never occur"),
             };
         }

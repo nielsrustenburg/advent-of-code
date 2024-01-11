@@ -43,6 +43,22 @@ namespace Shared
             }
         }
 
+        public static List<(int x, int y)> FindNeighbours<T>(T[,] grid, int x, int y)
+        {
+            var neighbours = new List<(int x, int y)>();
+            (int x, int y)[] candidates = { (x, y + 1), (x, y - 1), (x + 1, y), (x - 1, y) };
+            foreach (var candidate in candidates)
+            {
+                try
+                {
+                    var _ = grid[candidate.x, candidate.y];
+                    neighbours.Add(candidate);
+                }
+                catch { }
+            }
+            return neighbours;
+        }
+
         public static bool IsWithinGrid<T>(T[,] grid, int x, int y) {
             return x >= 0 && x < grid.GetLength(0) && y >= 0 && y < grid.GetLength(1);
         }

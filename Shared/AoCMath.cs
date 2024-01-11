@@ -72,6 +72,24 @@ namespace Shared
             return Mod(aInv, b);
         }
 
+        public static BigInteger Shoelace(IList<(BigInteger X, BigInteger Y)> sortedCoordinates)
+        {
+            BigInteger total = 0;
+            for (int i = 0; i < sortedCoordinates.Count; i++)
+            {
+                var nextIndex = (i + 1) % sortedCoordinates.Count;
+                var plus = sortedCoordinates[i].X * sortedCoordinates[nextIndex].Y;
+                var minus = sortedCoordinates[nextIndex].X * sortedCoordinates[i].Y;
+                total = total + plus - minus;
+            }
+            return total > 0 ? total / 2 : -total / 2;
+        }
+
+        public static BigInteger PicksFindI(BigInteger A,  BigInteger B)
+        {
+            return (A + 1) - (B / 2);
+        }
+
         private static (BigInteger, BigInteger) ModInvHelper(BigInteger greater, BigInteger smaller, (BigInteger a, BigInteger b) g, (BigInteger a, BigInteger b) s)
         {
             //Find the modular inverse A^-1 for A mod B

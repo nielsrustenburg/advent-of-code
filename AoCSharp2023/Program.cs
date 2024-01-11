@@ -18,4 +18,5 @@ Console.WriteLine("Hello, World!");
 //var d14 = new Day14();
 //var d15 = new Day15();
 //var d16 = new Day16();
-var d17 = new Day17();
+//var d17 = new Day17();
+var d18 = new Day18();
