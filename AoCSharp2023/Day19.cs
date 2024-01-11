@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Numerics;
 
 namespace AoCSharp2023
 {
@@ -9,11 +10,12 @@ namespace AoCSharp2023
             string[] lines = File.ReadAllLines("./inputs/19.txt");
             (Dictionary<string, Workflow> workflows, List<XMASPart> parts) = ReadInput(lines);
             Console.WriteLine(Part1(workflows, parts));
+            Console.WriteLine(Part2(workflows));
         }
 
-        (Dictionary<string,Workflow> Workflows, List<XMASPart> Parts) ReadInput(string[] lines)
+        (Dictionary<string, Workflow> Workflows, List<XMASPart> Parts) ReadInput(string[] lines)
         {
-            var workflows = new Dictionary<string,Workflow>();
+            var workflows = new Dictionary<string, Workflow>();
             int index = 0;
             while (lines[index] != string.Empty)
             {
@@ -23,32 +25,142 @@ namespace AoCSharp2023
             }
 
             var parts = new List<XMASPart>();
-            for(int i = index+1; i < lines.Length; i++)
+            for (int i = index + 1; i < lines.Length; i++)
             {
                 parts.Add(new XMASPart(lines[i]));
             }
 
             return (workflows, parts);
-        } 
+        }
 
         int Part1(Dictionary<string, Workflow> workflows, List<XMASPart> parts)
         {
             var accepted = new List<XMASPart>();
-            foreach(var part in parts)
+            foreach (var part in parts)
             {
                 var workflowName = "in";
                 var outcome = Outcome.GoToWorkflow;
-                while(outcome == Outcome.GoToWorkflow)
+                while (outcome == Outcome.GoToWorkflow)
                 {
                     (outcome, workflowName) = workflows[workflowName].Apply(part);
                 }
-                if(outcome == Outcome.Accept)
+                if (outcome == Outcome.Accept)
                 {
                     accepted.Add(part);
                 }
             }
 
             return accepted.Sum(part => part.X + part.M + part.A + part.S);
+        }
+
+        BigInteger Part2(Dictionary<string, Workflow> workflows)
+        {
+            var queue = new List<(string WfName, List<string> Constraints)>
+            {
+                ("in", new List<string>()),
+            };
+
+            var accepted = new List<List<string>>();
+            var rejected = new List<List<string>>();
+
+            while (queue.Any())
+            {
+                var next = queue.Last();
+                queue.RemoveAt(queue.Count - 1);
+
+                if (next.WfName == "A")
+                {
+                    accepted.Add(next.Constraints);
+                }
+                else if (next.WfName == "R")
+                {
+                    rejected.Add(next.Constraints);
+                }
+                else
+                {
+                    var workflow = workflows[next.WfName];
+                    var constraints = next.Constraints.ToList();
+                    for (int i = 0; i < workflow.Rules.Count; i++)
+                    {
+                        var rule = workflow.Rules[i];
+                        if (rule.Contains(':'))
+                        {
+                            var split = rule.Split(':');
+                            var comparison = split[0];
+                            var destination = split[1];
+                            queue.Add((destination, constraints.Append(comparison).ToList()));
+                            var oppositeConstraint = comparison.Contains('>') ? comparison.Replace('>', 'l') : comparison.Replace('<', 'g'); // l: <= g: >=
+                            constraints.Add(oppositeConstraint);
+                        }
+                        else
+                        {
+                            queue.Add((rule, constraints));
+                        }
+                    }
+                }
+            }
+
+            BigInteger totalAccepted = CountNumbersInConstraintSet(accepted);
+            //BigInteger totalRejected = CountNumbersInConstraintSet(rejected);
+            return totalAccepted;
+        }
+
+
+        public BigInteger CountNumbersInConstraintSet(List<List<string>> constraintSet)
+        {
+            BigInteger total = 0;
+            foreach (var constraints in constraintSet)
+            {
+                var minima = new int[] { 1, 1, 1, 1 };
+                var maxima = new int[] { 4000, 4000, 4000, 4000 };
+
+                for (int i = 0; i < constraints.Count; i++)
+                {
+                    var indexToUpdate = constraints[i][0] switch
+                    {
+                        'x' => 0,
+                        'm' => 1,
+                        'a' => 2,
+                        's' => 3,
+                        _ => throw new NotImplementedException()
+                    };
+
+                    var amount = int.Parse(constraints[i].Substring(2));
+                    var op = constraints[i][1];
+                    if (op == '<' && amount < maxima[indexToUpdate])
+                    {
+                        maxima[indexToUpdate] = amount - 1;
+                    }
+                    if (op == '>' && amount > minima[indexToUpdate])
+                    {
+                        minima[indexToUpdate] = amount + 1;
+                    }
+                    if (op == 'l' && amount <= maxima[indexToUpdate])
+                    {
+                        maxima[indexToUpdate] = amount;
+                    }
+                    if (op == 'g' && amount >= minima[indexToUpdate])
+                    {
+                        minima[indexToUpdate] = amount;
+                    }
+                }
+
+                BigInteger distinctCombinations = 1;
+                for (int i = 0; i < 4; i++)
+                {
+                    if (maxima[i] > minima[i])
+                    {
+                        distinctCombinations = distinctCombinations * (maxima[i] + 1 - minima[i]);
+                    }
+                    else
+                    {
+                        distinctCombinations = 0;
+                    }
+                }
+
+                total += distinctCombinations;
+            }
+            return total;
         }
     }
 
@@ -65,10 +177,10 @@ namespace AoCSharp2023
 
         public (Outcome Outcome, string? WorkflowName) Apply(XMASPart xmas)
         {
-            for(int i = 0; i < Rules.Count; i++)
+            for (int i = 0; i < Rules.Count; i++)
             {
                 var result = xmas.Apply(Rules[i]);
-                if(result.Outcome != Outcome.ApplyNext)
+                if (result.Outcome != Outcome.ApplyNext)
                 {
                     return result;
                 }
