@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using AoCSharp2023;
+using AoCSharp2023.Day23;
 
 Console.WriteLine("Hello, World!");
 
@@ -23,4 +24,5 @@ Console.WriteLine("Hello, World!");
 //var d19 = new Day19();
 //var d20 = new Day20();
 //var d21 = new Day21();
-var d22 = new Day22();
+//var d22 = new Day22();
+var d23 = new Day23();

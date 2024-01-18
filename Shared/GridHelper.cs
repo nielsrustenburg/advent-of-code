@@ -59,6 +59,23 @@ namespace Shared
             return neighbours;
         }
 
+        public static Dictionary<Direction, (int x, int y)> FindNeighboursWithDirections<T>(T[,] grid, int x, int y)
+        {
+            var neighbours = new Dictionary<Direction, (int x, int y)>();
+            Direction[] candidateDirections = {Direction.Up, Direction.Right, Direction.Down, Direction.Left };
+            foreach (var candidateDirection in candidateDirections)
+            {
+                try
+                {
+                    var candidate = candidateDirection.StepInDirection(x, y);
+                    var _ = grid[candidate.X, candidate.Y];
+                    neighbours.Add(candidateDirection, candidate);
+                }
+                catch { }
+            }
+            return neighbours;
+        }
+
         public static bool IsWithinGrid<T>(T[,] grid, int x, int y) {
             return x >= 0 && x < grid.GetLength(0) && y >= 0 && y < grid.GetLength(1);
         }
