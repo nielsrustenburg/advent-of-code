@@ -22,4 +22,5 @@ Console.WriteLine("Hello, World!");
 //var d18 = new Day18();
 //var d19 = new Day19();
 //var d20 = new Day20();
-var d21 = new Day21();
+//var d21 = new Day21();
+var d22 = new Day22();
