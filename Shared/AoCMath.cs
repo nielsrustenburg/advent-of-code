@@ -43,6 +43,17 @@ namespace Shared
             return GCD(smaller, Mod(greater, smaller));
         }
 
+        // Haven't looked up if this is correct..
+        public static BigInteger GCD(IEnumerable<BigInteger> nums)
+        {
+            BigInteger result = nums.First();
+            foreach (var num in nums.Skip(1))
+            {
+                result = GCD(result, num);
+            }
+            return result;
+        }
+
         public static BigInteger LCM(BigInteger a, BigInteger b)
         {
             return a * b / GCD(a, b);
