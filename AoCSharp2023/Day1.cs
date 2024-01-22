@@ -1,25 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AoCSharp2023
+﻿namespace AoCSharp2023
 {
-    // Part 2 only as I did part 1 in F# with a FParsec
     internal class Day1
     {
         public Day1()
         {
             string[] lines = File.ReadAllLines("./inputs/1.txt");
 
-            var result = lines.Aggregate(0, (a, b) => OuterDigitFinder(b) + a);
-            Console.WriteLine(result);
+            Console.WriteLine(Part1(lines));
+            Console.WriteLine(Part2(lines));
+        }
+
+        int Part1(string[] lines)
+        {
+            return lines.Aggregate(0, (a, b) => OuterDigitFinder(b) + a);
+        }
+
+        int Part2(string[] lines)
+        {
+            return lines.Aggregate(0, (a, b) => OuterDigitOrWordFinder(b) + a);
         }
 
         int OuterDigitFinder(string word)
         {
-            int maxDigitSize = 5;
+            var numericValues = word.Select(c => char.GetNumericValue(c));
+            var firstDigit = (int) numericValues.First(c => c > -1);
+            var lastDigit = (int) numericValues.Last(c => c > -1);
+            return firstDigit * 10 + lastDigit;
+        }
+
+        int OuterDigitOrWordFinder(string word)
+        {
             int? firstDigit = null;
             int? lastDigit = null;
             for (int i = 0; i < word.Length; i++)
@@ -54,7 +64,6 @@ namespace AoCSharp2023
             }
 
             var result = firstDigit.Value * 10 + lastDigit.Value;
-            //Console.WriteLine(result);
             return result;
         }
 
