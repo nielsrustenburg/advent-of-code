@@ -112,14 +112,9 @@ namespace AoCSharp2023
             queue.Enqueue((false, modules["broadcaster"], null));
             long lowPulses = 0;
             long highPulses = 0;
-            //bool rxReceivedLow = false;
             while (queue.Any())
             {
                 var (pulseIsHigh, consumer, producer) = queue.Dequeue();
-                //if (!pulseIsHigh && consumer.Name == "rx")
-                //{
-                //    rxReceivedLow = true;
-                //}
                 if (pulseIsHigh)
                 {
                     highPulses++;

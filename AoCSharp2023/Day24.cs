@@ -22,7 +22,6 @@ namespace AoCSharp2023
                 for (int j = i + 1; j < hailStones.Count; j++)
                 {
                     var hailStone2 = hailStones[j];
-                    //intersectCount = hailStone1.XYIntersection(hailStone2, 7, 27, true) ? intersectCount + 1 : intersectCount;
                     intersectCount = hailStone1.XYTestAreaIntersection(hailStone2, 200000000000000, 400000000000000, false) ? intersectCount + 1 : intersectCount;
                 }
             }

@@ -146,7 +146,6 @@ namespace AoCSharp2023
                 return LowerBoundCost.CompareTo(other.LowerBoundCost);
             }
             return GetHeuristicCost().CompareTo(other.GetHeuristicCost());
-            //return ConsecutiveStraightSteps.CompareTo(other.ConsecutiveStraightSteps);
         }
     }
 

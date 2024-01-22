@@ -59,16 +59,6 @@ namespace AoCSharp2023
             BigInteger topLeftLarge = AmountOfPlotsReachedInNSteps(freshGrids[10], freshGrids[10][width - 1, width - 1], stepsInLarge);
             BigInteger topLeftSmall = AmountOfPlotsReachedInNSteps(freshGrids[11], freshGrids[11][width - 1, width - 1], stepsInSmallBlocks);
 
-            // Write grids to file for sanity checking
-            //var fileNames = new string[] { "top", "right", "bottom", "left", "trl", "trs", "brl", "brs", "bll", "bls", "tll", "tls" };
-            //var evenOrOdd = new bool[] { false, false, false, false, false, true, false, true, false, true, false, true };
-            //for(int i = 0; i < 12; i++)
-            //{
-            //    WriteGridToFile(freshGrids[i], evenOrOdd[i], fileNames[i]);
-            //}
-            //WriteGridToFile(input.Grid, true, "full-even");
-            //WriteGridToFile(input.Grid, false, "full-odd");
-
             BigInteger total =
               (oddReachableTilesInFullBlock * oddFullBlocks) + (evenReachableTilesInFullBlock * evenFullBlocks) +
               (topPartialBlock + rightPartialBlock + bottomPartialBlock + leftPartialBlock) +
